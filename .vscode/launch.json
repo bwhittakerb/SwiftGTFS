@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftGTFS}",
+            "name": "Debug SwiftGTFS",
+            "program": "${workspaceFolder:SwiftGTFS}\\.build\\debug\\SwiftGTFS.exe",
+            "preLaunchTask": "swift: Build Debug SwiftGTFS"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftGTFS}",
+            "name": "Release SwiftGTFS",
+            "program": "${workspaceFolder:SwiftGTFS}\\.build\\release\\SwiftGTFS.exe",
+            "preLaunchTask": "swift: Build Release SwiftGTFS"
+        }
+    ]
+}
