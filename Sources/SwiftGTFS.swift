@@ -1,6 +1,8 @@
 import SQLite
 import Foundation
 
+// a much later TODO: abstract away how much I have to prep the db by hand
+// current instructions are in the ./DataCreation folder
 // let connectionPath = "/Users/brendan/Builds/data/gtfs/ets.db"
 let connectionPath = "/home/brendan/projects/GTFS-ETS/CompiledDB/ets.db"
 
@@ -152,13 +154,7 @@ public struct NearbyBusses: Codable {
     let coordinates: Coordinates
     let stops: [String]
     let stopArrivals: [StopArrivals]
-    
-    
-//    init(atTime: Date = Date(), coordinates: Coordinates) {
-//        self.atTime = atTime
-//        self.coordinates = coordinates
-//    }
-    
+  
     public static func retrieveStops(location: Coordinates, distance: Double = 0.25) -> [Stop] {
         let allStops = DatabaseManager.shared.getAllStops()
         var closeStops: [Stop] = []
@@ -173,8 +169,6 @@ public struct NearbyBusses: Codable {
         return closeStops
         
     }
-    
-//    static func retrieveAllArrivalsAtStops(stopList: [Stop])
     
     public static func retrieveRecentArrivalsByStop(stops: [Stop], arrivalThresholdInHours: Double) -> [StopArrivals]{
         let dbResults = DatabaseManager.shared.getSelectedStopsAndArrivals(listOfStopIDs: stops.map {$0.id})
@@ -208,7 +202,6 @@ public struct NearbyBusses: Codable {
                 
                 stopArrivalsList.append(stopArrival)
                 
-//                print(arrivalsAtStop)
                 
             } catch {print(error)}
             
@@ -296,18 +289,9 @@ public struct NearbyBusses: Codable {
     }
 }
 
-
+// scratchpad of stuff I used to build and test
 //let sampleStops = ["1141", "1392", "1688", "1939", "1960"]
 //print(info)
 
-// debug testing (commented out)
-
 // let result = NearbyBusses.retrieveStops(location: Coordinates(lat: 53.54092272954773, long: -113.52495148525607))
 // let result2 = NearbyBusses.retrieveRecentArrivalsByStop(stops: result, arrivalThresholdInHours: 1)
-
-// let encoder = JSONEncoder()
-// encoder.dateEncodingStrategy = .iso8601 // Set the date encoding strategy to ISO 8601 format
-// if let encodedData = try? encoder.encode(result2),
-//    let jsonString = String(data: encodedData, encoding: .utf8) {
-//     print(jsonString)
-// }
