@@ -27,6 +27,8 @@ class DatabaseManager {
     let tripID = Expression<String>("trip_id")
     let serviceID = Expression<String>("service_id")
 
+    //okay let's try to make this index
+
     private init() {
         
         do {
@@ -37,11 +39,12 @@ class DatabaseManager {
                     CREATE TEMP VIEW IF NOT EXISTS valid_service_ids AS
                            SELECT service_id, date
                            FROM calendar_dates
-                           WHERE date == strftime('%Y%m%d', 'now', 'localtime')
-                              OR date == strftime('%Y%m%d', 'now', 'localtime', '+1 day');
+                           WHERE date == strftime('%Y%m%d', 'now', 'localtime');
                     """
             
             try self.db?.execute(tempValidServiceView)
+
+            
         } catch {
             print("Unable to connect to database: \(error)")
             db = nil

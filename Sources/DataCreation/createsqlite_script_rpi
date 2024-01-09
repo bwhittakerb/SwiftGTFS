@@ -30,5 +30,12 @@ delete from shapes where shape_id like 'shape_id';
 delete from stops where stop_id like 'stop_id';
 delete from stop_times where trip_id like 'trip_id';
 delete from trips where route_id like 'route_id';
+-- index creation statements
+CREATE INDEX IF NOT EXISTS idx_stop_times_arrival_time ON stop_times(arrival_time);
+CREATE INDEX IF NOT EXISTS idx_stop_times_trip_id ON stop_times(trip_id);
+CREATE INDEX IF NOT EXISTS idx_trips_trip_id ON trips(trip_id);
+CREATE INDEX IF NOT EXISTS idx_stops_stop_id ON stops(stop_id);
+CREATE INDEX IF NOT EXISTS idx_trips_route_id ON trips(route_id);
+CREATE INDEX IF NOT EXISTS idx_trips_service_id ON trips(service_id);
 select * from stops where stop_id == 1688;
 
