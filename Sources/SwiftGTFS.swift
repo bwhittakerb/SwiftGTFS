@@ -40,6 +40,7 @@ class DatabaseManager {
                            SELECT service_id, date
                            FROM calendar_dates
                            WHERE date == strftime('%Y%m%d', 'now', 'localtime');
+                            or date == strftime('%Y%m%d', 'now', 'localtime', '-1 day');
                     """
             
             try self.db?.execute(tempValidServiceView)
