@@ -9,7 +9,7 @@
             "args": [],
             "cwd": "${workspaceFolder:SwiftGTFS}",
             "name": "Debug SwiftGTFS",
-            "program": "${workspaceFolder:SwiftGTFS}\\.build\\debug\\SwiftGTFS.exe",
+            "program": "${workspaceFolder:SwiftGTFS}/.build/debug/SwiftGTFS",
             "preLaunchTask": "swift: Build Debug SwiftGTFS"
         },
         {
@@ -21,7 +21,7 @@
             "args": [],
             "cwd": "${workspaceFolder:SwiftGTFS}",
             "name": "Release SwiftGTFS",
-            "program": "${workspaceFolder:SwiftGTFS}\\.build\\release\\SwiftGTFS.exe",
+            "program": "${workspaceFolder:SwiftGTFS}/.build/release/SwiftGTFS",
             "preLaunchTask": "swift: Build Release SwiftGTFS"
         }
     ]

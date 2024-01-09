@@ -239,21 +239,27 @@ struct NearbyBusses: Codable {
         if let date = dateTimeFormatter.date(from: "\(dateString) \(timeString)") {
             return date
         } else {
-            let formatter = DateComponentsFormatter()
-            formatter.allowedUnits = [.hour, .minute, .second]
-            formatter.unitsStyle = .positional
-            formatter.zeroFormattingBehavior = .pad
-            
+
             guard let duration = timeIntervalFromString(timeString) else {
                 throw DateError.invalidDateFormat
             }
             
             // Adjust for overflow past midnight
             // subtracting 24 hours worth of seconds from time:
-            let dayDuration: Double = 24 * 60 * 60
+            let dayDuration: TimeInterval = 24 * 60 * 60
             let subtractedDuration = duration - dayDuration
-            
-            guard let formattedCorrectedTime = formatter.string(from: subtractedDuration) else {throw DateError.invalidDateFormat}
+
+            func formatDurationToString(_ duration: TimeInterval) -> String {
+                let hours = Int(duration) / 3600
+                let minutes = Int(duration) % 3600 / 60
+                let seconds = Int(duration) % 60
+
+                // This will pad the integers with leading zeros to make them at least two digits long
+                return String(format:"%02d:%02d:%02d", hours, minutes, seconds)
+            }
+
+            let formattedCorrectedTime = formatDurationToString(subtractedDuration)
+            // guard let formattedCorrectedTime = formatter.string(from: subtractedDuration) else {throw DateError.invalidDateFormat}
             
             guard let correctedDate = dateTimeFormatter.date(from: "\(dateString) \(formattedCorrectedTime)")?.addingTimeInterval(dayDuration) else {
                 throw DateError.invalidDateFormat
