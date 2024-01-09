@@ -1,7 +1,8 @@
 import SQLite
 import Foundation
 
-let connectionPath = "/Users/brendan/Builds/data/gtfs/ets.db"
+// let connectionPath = "/Users/brendan/Builds/data/gtfs/ets.db"
+let connectionPath = "/home/brendan/projects/GTFS-ETS/CompiledDB/ets.db"
 
 var greeting = "Hello, playground"
 
