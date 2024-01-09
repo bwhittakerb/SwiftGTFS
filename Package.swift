@@ -5,16 +5,28 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftGTFS",
+    products: [
+        // Define a library product that other packages can depend on.
+        .library(
+            name: "SwiftGTFS",
+            targets: ["SwiftGTFS"]
+        ),
+    ],
     dependencies: [
         .package(url: "https://github.com/stephencelis/SQLite.swift.git", .upToNextMajor(from: "0.14.1")),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
-        .executableTarget(
+        .target( // Changed from .executableTarget to .target to create a library
             name: "SwiftGTFS",
-            dependencies: [.product(name: "SQLite", package: "SQLite.swift"),
-        ])
+            dependencies: [.product(name: "SQLite", package: "SQLite.swift"),],
+            path: "./Sources" // Replace with the actual path to your sources.
+        ),
+        // .executableTarget(
+        //     name: "SwiftGTFSApp",
+        //     dependencies: [.product(name: "SQLite", package: "SQLite.swift"),
+        // ])
             
     ]
 )

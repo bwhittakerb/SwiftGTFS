@@ -111,7 +111,7 @@ extension DatabaseManager {
     
 }
 
-struct Stop: Codable {
+public struct Stop: Codable {
     let id: String
     let name: String
     let latitude: Double
@@ -122,25 +122,31 @@ struct Stop: Codable {
     }
 }
 
-struct Coordinates: Codable {
+public struct Coordinates: Codable {
     let lat: Double
     let long: Double
+
+    // Manual initializer
+    public init(lat: Double, long: Double) {
+        self.lat = lat
+        self.long = long
+    }
 }
 
-struct Arrival: Codable {
+public struct Arrival: Codable {
     let routeID: String
     let arrivalTime: Date
     let headSign: String
 }
 
-struct StopArrivals: Codable {
+public struct StopArrivals: Codable {
     let stop: String
     let stopName: String
     let stopCoords: Coordinates
     let Arrivals: [Arrival]
 }
 
-struct NearbyBusses: Codable {
+public struct NearbyBusses: Codable {
     let atTime: Date
     let coordinates: Coordinates
     let stops: [String]
@@ -152,7 +158,7 @@ struct NearbyBusses: Codable {
 //        self.coordinates = coordinates
 //    }
     
-    static func retrieveStops(location: Coordinates, distance: Double = 0.25) -> [Stop] {
+    public static func retrieveStops(location: Coordinates, distance: Double = 0.25) -> [Stop] {
         let allStops = DatabaseManager.shared.getAllStops()
         var closeStops: [Stop] = []
         
@@ -169,7 +175,7 @@ struct NearbyBusses: Codable {
     
 //    static func retrieveAllArrivalsAtStops(stopList: [Stop])
     
-    static func retrieveRecentArrivalsByStop(stops: [Stop], arrivalThresholdInHours: Double) -> [StopArrivals]{
+    public static func retrieveRecentArrivalsByStop(stops: [Stop], arrivalThresholdInHours: Double) -> [StopArrivals]{
         let dbResults = DatabaseManager.shared.getSelectedStopsAndArrivals(listOfStopIDs: stops.map {$0.id})
         
         var stopArrivalsList: [StopArrivals] = []
@@ -293,12 +299,14 @@ struct NearbyBusses: Codable {
 //let sampleStops = ["1141", "1392", "1688", "1939", "1960"]
 //print(info)
 
-let result = NearbyBusses.retrieveStops(location: Coordinates(lat: 53.54092272954773, long: -113.52495148525607))
-let result2 = NearbyBusses.retrieveRecentArrivalsByStop(stops: result, arrivalThresholdInHours: 1)
+// debug testing (commented out)
 
-let encoder = JSONEncoder()
-encoder.dateEncodingStrategy = .iso8601 // Set the date encoding strategy to ISO 8601 format
-if let encodedData = try? encoder.encode(result2),
-   let jsonString = String(data: encodedData, encoding: .utf8) {
-    print(jsonString)
-}
+// let result = NearbyBusses.retrieveStops(location: Coordinates(lat: 53.54092272954773, long: -113.52495148525607))
+// let result2 = NearbyBusses.retrieveRecentArrivalsByStop(stops: result, arrivalThresholdInHours: 1)
+
+// let encoder = JSONEncoder()
+// encoder.dateEncodingStrategy = .iso8601 // Set the date encoding strategy to ISO 8601 format
+// if let encodedData = try? encoder.encode(result2),
+//    let jsonString = String(data: encodedData, encoding: .utf8) {
+//     print(jsonString)
+// }
