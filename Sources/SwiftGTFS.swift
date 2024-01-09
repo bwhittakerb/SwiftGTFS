@@ -186,7 +186,7 @@ public struct NearbyBusses: Codable {
                 let arrivalsAtStop = try listOfArrivals.map { dictionary in
                     Arrival(
                         routeID: dictionary["RouteID"] as! String,
-                        arrivalTime: try parseDateAndTime(dateString: String(dictionary["Date"] as! Int),                                                                                      timeString: dictionary["ArrivalTime"] as! String),
+                        arrivalTime: try parseDateAndTime(dateString: String(dictionary["Date"] as! Int), timeString: dictionary["ArrivalTime"] as! String),
                         headSign: dictionary["TripHeadsign"] as! String)
                     
                 }
