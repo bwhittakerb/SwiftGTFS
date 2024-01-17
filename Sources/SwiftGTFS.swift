@@ -16,7 +16,7 @@ class DatabaseManager {
     let trips = Table("trips")
     let stopTimes = Table("stop_times")
     let calendarDates = Table("calendar_dates")
-    let validServiceIDsView = View("valid_service_ids")
+    // let validServiceIDsView = View("valid_service_ids")
     
     let stopLat = Expression<Double>("stop_lat")
     let stopLon = Expression<Double>("stop_lon")
@@ -36,16 +36,16 @@ class DatabaseManager {
         do {
             db = try Connection(connectionPath)
 
-            // Create the temporary view
-            let tempValidServiceView = """
-                    CREATE TEMP VIEW IF NOT EXISTS valid_service_ids AS
-                           SELECT service_id, date
-                           FROM calendar_dates
-                           WHERE date == strftime('%Y%m%d', 'now', 'localtime')
-                            OR date == strftime('%Y%m%d', 'now', 'localtime', '-1 day');
-                    """
+            // // Create the temporary view
+            // let tempValidServiceView = """
+            //         CREATE TEMP VIEW IF NOT EXISTS valid_service_ids AS
+            //                SELECT service_id, date
+            //                FROM calendar_dates
+            //                WHERE date == strftime('%Y%m%d', 'now', 'localtime')
+            //                 OR date == strftime('%Y%m%d', 'now', 'localtime', '-1 day');
+            //         """
             
-            try self.db?.execute(tempValidServiceView)
+            // try self.db?.execute(tempValidServiceView)
 
             
         } catch {
@@ -80,17 +80,46 @@ extension DatabaseManager {
 }
 
 extension DatabaseManager {
-    func getSelectedStopsAndArrivals(listOfStopIDs: [String]) -> [[String: Any]] {
+    func getSelectedStopsAndArrivals(listOfStopIDs: [String]) throws -> [[String: Any]] {
         
         var queryResult: [[String: Any]] = []
+
+        // time stuff
+        enum DateError: Error {
+            case invalidDateFormat
+        }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+        dateFormatter.timeZone = TimeZone(identifier: "America/Edmonton")
+        //time formatter
+        let timeFormatter = DateFormatter()
+        timeFormatter.timeZone = dateFormatter.timeZone
+        timeFormatter.dateFormat = "HH:mm:ss"
+        let calendar = Calendar.current
+        let currentDate = Date()
+        let currentDateString = dateFormatter.string(from: currentDate)
+        let currentDateInt = Int(currentDateString)
+        let oneHourAgo = calendar.date(byAdding: .hour, value: -1, to: currentDate)!
+        let oneHourAgoHour = calendar.component(.hour, from: oneHourAgo)
+        let oneDayAgo = calendar.date(byAdding: .day, value: -1, to: currentDate)!
+        let oneDayAgoDateString = dateFormatter.string(from: oneDayAgo)
+        let oneDayAgoInt = Int(oneDayAgoDateString)
+
+
         
         do {
             let nearbyStopsBussesQuery = stopTimes
-                .select(stopTimes[arrivalTime], trips[routeID], trips[tripHeadsign], stopTimes[stopID], date, stops[stopLat], stops[stopLon])
+                .select(stopTimes[arrivalTime], trips[routeID], trips[tripHeadsign],
+                        stopTimes[stopID], date, stops[stopName], stops[stopLat], stops[stopLon])
                 .join(trips, on: stopTimes[tripID] == trips[tripID])
-                .join(validServiceIDsView, on: trips[serviceID] == validServiceIDsView[serviceID])
                 .join(stops, on: stopTimes[stopID] == stops[stopID])
-                .where(listOfStopIDs.contains(stopTimes[stopID]))
+                .join(calendarDates, on: trips[serviceID] == calendarDates[serviceID])
+                .where(listOfStopIDs.contains(stopTimes[stopID]) 
+                    && 
+                    ((currentDateInt! == calendarDates[date] && (cast(stopTimes[arrivalTime].substring(1, length: 2)) as Expression<Int> >= oneHourAgoHour))
+                    ||
+                      (oneDayAgoInt! == calendarDates[date] && (cast(stopTimes[arrivalTime].substring(1, length: 2)) as Expression<Int> >= 24))  )
+                    )
             
             let rows = try self.db?.prepare(nearbyStopsBussesQuery)
             
@@ -100,6 +129,7 @@ extension DatabaseManager {
                     "RouteID": row[routeID],
                     "TripHeadsign": row[tripHeadsign],
                     "StopID": row[stopID],
+                    "StopName": row[stopName],
                     "Date": row[date],
                     "StopCoordinates": Coordinates(lat: row[stopLat], long: row[stopLon])
                 ])
@@ -171,18 +201,17 @@ public struct NearbyBusses: Codable {
     }
     
     public static func retrieveRecentArrivalsByStop(stops: [Stop], arrivalThresholdInHours: Double) -> [StopArrivals]{
-        let dbResults = DatabaseManager.shared.getSelectedStopsAndArrivals(listOfStopIDs: stops.map {$0.id})
+        do {
+            let dbResults = try! DatabaseManager.shared.getSelectedStopsAndArrivals(listOfStopIDs: stops.map {$0.id})
         
         var stopArrivalsList: [StopArrivals] = []
-        
-        let listOfStopIDs = dbResults.compactMap { $0["StopID"] as? String }
-        let listOfUniqueStopIDs = Set(listOfStopIDs)
-        
-        for uniqueID in listOfUniqueStopIDs {
+
+        for stopItem in stops {
+
             let listOfArrivals = dbResults.filter {arrival in
-                return arrival["StopID"] as? String == uniqueID}
+                return arrival["StopID"] as? String == stopItem.id}
             
-            do {
+
                 let arrivalsAtStop = try listOfArrivals.map { dictionary in
                     Arrival(
                         routeID: dictionary["RouteID"] as! String,
@@ -198,17 +227,20 @@ public struct NearbyBusses: Codable {
                 }
                 
                              
-                let stopArrival = StopArrivals(stop: uniqueID, stopName: uniqueID, stopCoords: listOfArrivals.first!["StopCoordinates"] as! Coordinates, Arrivals: filteredArrivalsAtStop)
+                let stopArrival = StopArrivals(stop: stopItem.id, stopName: stopItem.name, stopCoords: listOfArrivals.first!["StopCoordinates"] as! Coordinates, Arrivals: filteredArrivalsAtStop)
                 
                 stopArrivalsList.append(stopArrival)
                 
                 
-            } catch {print(error)}
+            
             
             
             
         }
+
         return stopArrivalsList
+        } catch {return []}
+
     }
     
     static func parseDateAndTime(dateString: String, timeString: String) throws -> Date {

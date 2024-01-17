@@ -21,12 +21,13 @@ let package = Package(
         .target( // Changed from .executableTarget to .target to create a library
             name: "SwiftGTFS",
             dependencies: [.product(name: "SQLite", package: "SQLite.swift"),],
-            path: "./Sources" // Replace with the actual path to your sources.
+            path: "./Sources"
         ),
-        // .executableTarget(
-        //     name: "SwiftGTFSApp",
-        //     dependencies: [.product(name: "SQLite", package: "SQLite.swift"),
-        // ])
-            
+        .testTarget(
+            name: "SwiftGTFSTests",
+            dependencies: ["SwiftGTFS"],
+            path: "Tests/SwiftGTFSTests"
+        ),
+       
     ]
 )
