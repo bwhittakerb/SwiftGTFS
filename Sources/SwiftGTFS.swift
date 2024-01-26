@@ -208,28 +208,29 @@ public struct NearbyBusses: Codable {
 
         for stopItem in stops {
 
+            let currentStopCoordinates = Coordinates(lat: stopItem.latitude, long: stopItem.longitude)
+
             let listOfArrivals = dbResults.filter {arrival in
                 return arrival["StopID"] as? String == stopItem.id}
             
-
-                let arrivalsAtStop = try listOfArrivals.map { dictionary in
-                    Arrival(
-                        routeID: dictionary["RouteID"] as! String,
-                        arrivalTime: try parseDateAndTime(dateString: String(dictionary["Date"] as! Int), timeString: dictionary["ArrivalTime"] as! String),
-                        headSign: dictionary["TripHeadsign"] as! String)
-                    
-                }
+            let arrivalsAtStop = try listOfArrivals.map { dictionary in
+                Arrival(
+                    routeID: dictionary["RouteID"] as! String,
+                    arrivalTime: try parseDateAndTime(dateString: String(dictionary["Date"] as! Int), timeString: dictionary["ArrivalTime"] as! String),
+                    headSign: dictionary["TripHeadsign"] as! String)
                 
-                let filteredArrivalsAtStop = arrivalsAtStop.filter { arrival in
-                    let timeDifference = arrival.arrivalTime.timeIntervalSinceNow
-                    return (timeDifference <= arrivalThresholdInHours * 3600 &&
-                        timeDifference >= (-5 * 60)) // threshold hours in seconds and last 5 minutes
-                }
-                
-                             
-                let stopArrival = StopArrivals(stop: stopItem.id, stopName: stopItem.name, stopCoords: listOfArrivals.first!["StopCoordinates"] as! Coordinates, Arrivals: filteredArrivalsAtStop)
-                
-                stopArrivalsList.append(stopArrival)
+            }
+            
+            let filteredArrivalsAtStop = arrivalsAtStop.filter { arrival in
+                let timeDifference = arrival.arrivalTime.timeIntervalSinceNow
+                return (timeDifference <= arrivalThresholdInHours * 3600 &&
+                    timeDifference >= (-5 * 60)) // threshold hours in seconds and last 5 minutes
+            }
+            
+                            
+            let stopArrival = StopArrivals(stop: stopItem.id, stopName: stopItem.name, stopCoords: currentStopCoordinates, Arrivals: filteredArrivalsAtStop)
+            
+            stopArrivalsList.append(stopArrival)
                 
                 
             
